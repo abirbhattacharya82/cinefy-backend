@@ -75,20 +75,15 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
                 "password": password
             }
             try {
-                const cursor = await userCollection.find();
-                const user = await cursor.toArray();
-                if (user.length != 0) {
-                    const secret = process.env.secret;
-                    const payload = { userID: user[0]._id.username };
-                    const option = { expiresIn: '1h' };
-                    const token = jwt.sign(payload, secret, option);
-                    res.status(200).send({ "message": "successs", "username": user[0]._id.username, "token": token });
-                }
-                else
-                    res.status(404).send({ "message": "Error retrieving movies from database." });
+                const user = await userCollection.findOne(obj);
+                const secret = process.env.secret;
+                const payload = { userID: user._id.username };
+                const option = { expiresIn: '1h' };
+                const token = jwt.sign(payload, secret, option);
+                res.status(200).send({ "message": "successs", "username": user._id.username, "token": token });
             } catch (error) {
                 console.error(error);
-                res.status(404).send({ "message": "Error retrieving movies from database." });
+                res.status(404).send({ "message": "Invalid Credentials" });
             }
         });
 
