@@ -14,22 +14,33 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
         const db = client.db('cinefy');
         const moviesCollection = db.collection('movies');
         app.post('/insert_movie', async (req, res) => {
-            const name=req.query.name;
-            const src=req.query.src;
-            const obj={
-                "_id":{
-                    "movie_id":src+"_________id"
+            const name = req.query.name;
+            const src = req.query.src;
+            const obj = {
+                "_id": {
+                    "movie_id": src + "_________id"
                 },
-                "name":name,
-                "src":src
+                "name": name,
+                "src": src
             }
             try {
                 const result = await moviesCollection.insertOne(obj);
                 console.log(result);
-                res.status(200).send({"message":"success"})
+                res.status(200).send({ "message": "success" })
             } catch (error) {
                 console.error(error);
-                res.status(500).send({"message":"movie already exists"});
+                res.status(500).send({ "message": "movie already exists" });
             }
         })
+
+        app.get('/movies', async (req, res) => {
+            try {
+                const cursor = await moviesCollection.find();
+                const movies = await cursor.toArray();
+                res.status(200).send({"message":"successs","movies":movies});
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({"message":"Error retrieving movies from database."});
+            }
+        });
     });
