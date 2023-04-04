@@ -4,7 +4,8 @@
   "description": "apis for cinefy",
   "main": "index.js",
   "scripts": {
-    "test": "node index.js"
+    "test": "",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
