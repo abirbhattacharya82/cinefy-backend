@@ -13,6 +13,7 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
     .then(client => {
         const db = client.db('cinefy');
         const moviesCollection = db.collection('movies');
+
         app.post('/insert_movie', async (req, res) => {
             const name = req.query.name;
             const src = req.query.src;
@@ -29,7 +30,7 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
                 res.status(200).send({ "message": "success" })
             } catch (error) {
                 console.error(error);
-                res.status(500).send({ "message": "movie already exists" });
+                res.status(404).send({ "message": "movie already exists" });
             }
         })
 
@@ -37,10 +38,36 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
             try {
                 const cursor = await moviesCollection.find();
                 const movies = await cursor.toArray();
-                res.status(200).send({"message":"successs","movies":movies});
+                res.status(200).send({ "message": "successs", "movies": movies });
             } catch (error) {
                 console.error(error);
-                res.status(500).send({"message":"Error retrieving movies from database."});
+                res.status(404).send({ "message": "Error retrieving movies from database." });
             }
         });
     });
+
+MongoClient.connect(mongoURI, { useUnifiedTopology: true })
+    .then(client => {
+        const db = client.db('cinefy');
+        const userCollections = db.collection('users');
+
+        app.post('/register', async (req, res) => {
+            const username = req.query.username;
+            const password = req.query.password;
+            const obj = {
+                "_id": {
+                    "username": username
+                },
+                "password": password
+            }
+            try {
+                const result = await userCollections.insertOne(obj);
+                console.log(result);
+                res.status(200).send({ "message": "success" })
+            } catch (error) {
+                console.error(error);
+                res.status(404).send({ "message": "username already exists" });
+            }
+        });
+    }
+    )
