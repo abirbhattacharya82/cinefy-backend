@@ -46,6 +46,7 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
                 res.status(404).send({ "message": "Error retrieving movies from database." });
             }
         });
+
         app.post('/register', async (req, res) => {
             const username = req.query.username;
             const password = req.query.password;
@@ -53,11 +54,12 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
                 "_id": {
                     "username": username
                 },
-                "password": password
+                "password": password,
+                "token":"",
+                "watchlist": []
             }
             try {
                 const result = await userCollection.insertOne(obj);
-                console.log(result);
                 res.status(200).send({ "message": "success" })
             } catch (error) {
                 console.error(error);
@@ -79,8 +81,9 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
                 const secret = process.env.secret;
                 const payload = { userID: user._id.username };
                 const option = { expiresIn: '1h' };
-                const token = jwt.sign(payload, secret, option);
-                res.status(200).send({ "message": "successs", "username": user._id.username, "token": token });
+                const tokenG = jwt.sign(payload, secret, option);
+                const result=await userCollection.updateOne(obj,{$set:{token:tokenG}})
+                res.status(200).send({ "message": "successs", "username": user._id.username, "token": tokenG });
             } catch (error) {
                 console.error(error);
                 res.status(404).send({ "message": "Invalid Credentials" });
