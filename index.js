@@ -14,6 +14,7 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
     .then(client => {
         const db = client.db('cinefy');
         const moviesCollection = db.collection('movies');
+        const userCollection = db.collection('users');
 
         app.post('/insert_movie', async (req, res) => {
             const name = req.query.name;
@@ -45,13 +46,6 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
                 res.status(404).send({ "message": "Error retrieving movies from database." });
             }
         });
-    });
-
-MongoClient.connect(mongoURI, { useUnifiedTopology: true })
-    .then(client => {
-        const db = client.db('cinefy');
-        const userCollection = db.collection('users');
-
         app.post('/register', async (req, res) => {
             const username = req.query.username;
             const password = req.query.password;
@@ -83,12 +77,11 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
             try {
                 const cursor = await userCollection.find();
                 const user = await cursor.toArray();
-                if(user.length!=0)
-                {
-                    const secret=process.env.secret;
-                    const payload={userID:user[0]._id.username};
-                    const option={expiresIn:'1h'};
-                    const token=jwt.sign(payload,secret,option);
+                if (user.length != 0) {
+                    const secret = process.env.secret;
+                    const payload = { userID: user[0]._id.username };
+                    const option = { expiresIn: '1h' };
+                    const token = jwt.sign(payload, secret, option);
                     res.status(200).send({ "message": "successs", "username": user[0]._id.username, "token": token });
                 }
                 else
@@ -98,11 +91,6 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
                 res.status(404).send({ "message": "Error retrieving movies from database." });
             }
         });
-    }
-    )
 
-app.get('/',async(req,res)=>{
-    res.send("its working");
-})
-
-app.listen(port);
+        app.listen(port);
+    });
