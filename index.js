@@ -5,7 +5,7 @@ app.use(cors());
 app.use(express.json());
 const port = process.env.PORT || 8000;
 require('dotenv').config();
-app.listen(port);
+
 const mongoURI = process.env.url;
 const MongoClient = require('mongodb').MongoClient;
 const jwt = require('jsonwebtoken');
@@ -100,3 +100,9 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
         });
     }
     )
+
+app.get('/',async(req,res)=>{
+    res.send("its working");
+})
+
+app.listen(port);
