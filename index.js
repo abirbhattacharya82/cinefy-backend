@@ -55,7 +55,6 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
                     "username": username
                 },
                 "password": password,
-                "token": "",
                 "watchlist": []
             }
             try {
@@ -82,41 +81,61 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
                 const payload = { userID: user._id.username };
                 const option = { expiresIn: '1h' };
                 const tokenG = jwt.sign(payload, secret, option);
-                const result = await userCollection.updateOne(obj, { $set: { token: tokenG } })
                 res.status(200).send({ "message": "successs", "username": user._id.username, "token": tokenG });
             } catch (error) {
-                console.error(error);
                 res.status(404).send({ "message": "Invalid Credentials" });
             }
         });
 
-        app.post('/addToWatchList', async (req, res) => {
+        app.get('/userData', async (req, res) => {
             const token=req.query.token;
-            const movie_id=req.query.movie_id;
+            const secret = process.env.secret;
             try{
-                const result=await userCollection.updateOne({"token":token},{$push:{watchlist:movie_id}});
-                if(result.modifiedCount==1){
-                    res.status(200).send({"message":"successfully added to watchlist"});
+                const user=jwt.verify(token,secret,(err,response)=>{
+                    if(err){
+                        return 404;
+                    }
+                    else{
+                        return 200;
+                    }
+                });
+                if(user==404){
+                    res.status(404).send({"message":"Token Expired"});
                 }
-                else
-                {
-                    res.status(404).send({"message":"Error Occured"});
+                else{
+                    res.status(200).send({"message":"Token Valid"});
+                }
+            }catch(e){
+                res.status(404).send({"message":"Token Expired"});
+            }
+        })
+
+        app.post('/addToWatchList', async (req, res) => {
+            const token = req.query.token;
+            const movie_id = req.query.movie_id;
+            try {
+                const result = await userCollection.updateOne({ "token": token }, { $push: { watchlist: movie_id } });
+                if (result.modifiedCount == 1) {
+                    res.status(200).send({ "message": "successfully added to watchlist" });
+                }
+                else {
+                    res.status(404).send({ "message": "Error Occured" });
                 }
             }
-            catch(err){
-                res.status(404).send({"message":"Error Occured"});
+            catch (err) {
+                res.status(404).send({ "message": "Error Occured" });
             }
         });
 
-        app.get('/fetchWatchlist',async (req,res)=>{
-            const token=req.query.token;
-            try{
-                const cursor=await userCollection.findOne({"token":token});
-                res.status(200).send({"watchlist":cursor.watchlist});
+        app.get('/fetchWatchlist', async (req, res) => {
+            const token = req.query.token;
+            try {
+                const cursor = await userCollection.findOne({ "token": token });
+                res.status(200).send({ "watchlist": cursor.watchlist });
             }
-            catch(err){
+            catch (err) {
                 console.log(err);
-                res.status(404).send({"message":"Error in Fetching"});
+                res.status(404).send({ "message": "Error in Fetching" });
             }
         });
 
