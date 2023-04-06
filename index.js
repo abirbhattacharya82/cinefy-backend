@@ -156,6 +156,7 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
 
         app.get('/checkTokenValidity', async (req,res)=>{
             const token=req.query.token;
+            const secret = process.env.secret;
             const user = jwt.verify(token, secret, (err, response) => {
                 if (err) {
                     return 404;
