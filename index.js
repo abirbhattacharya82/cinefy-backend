@@ -110,11 +110,13 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
             }
         })
 
-        app.post('/addToWatchList', async (req, res) => {
+        app.post('/addToWatchlist', async (req, res) => {
             const token = req.query.token;
+            const decodeToken=jwt.decode(token);
+            const username=decodeToken.userID;
             const movie_id = req.query.movie_id;
             try {
-                const result = await userCollection.updateOne({ "token": token }, { $push: { watchlist: movie_id } });
+                const result = await userCollection.updateOne({"_id":{"username":username}}, { $push: { watchlist: movie_id } });
                 if (result.modifiedCount == 1) {
                     res.status(200).send({ "message": "successfully added to watchlist" });
                 }
@@ -129,13 +131,26 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
 
         app.get('/fetchWatchlist', async (req, res) => {
             const token = req.query.token;
+            const decodeToken=jwt.decode(token);
+            const username=decodeToken.userID;
             try {
-                const cursor = await userCollection.findOne({ "token": token });
+                const cursor = await userCollection.findOne({"_id":{"username":username}});
                 res.status(200).send({ "watchlist": cursor.watchlist });
             }
             catch (err) {
                 console.log(err);
                 res.status(404).send({ "message": "Error in Fetching" });
+            }
+        });
+
+        app.get('/fetchMovieById', async (req,res)=>{
+            const movie_id=req.query.movie_id;
+            try {
+                const result = await moviesCollection.findOne({"_id":{"movie_id":movie_id}});
+                res.status(200).send({ "message": "successs", "movies": result });
+            } catch (error) {
+                console.error(error);
+                res.status(404).send({ "message": "Error retrieving movies from database." });
             }
         });
 
