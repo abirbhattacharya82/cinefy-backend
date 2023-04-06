@@ -88,35 +88,35 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
         });
 
         app.get('/userData', async (req, res) => {
-            const token=req.query.token;
+            const token = req.query.token;
             const secret = process.env.secret;
-            try{
-                const user=jwt.verify(token,secret,(err,response)=>{
-                    if(err){
+            try {
+                const user = jwt.verify(token, secret, (err, response) => {
+                    if (err) {
                         return 404;
                     }
-                    else{
+                    else {
                         return 200;
                     }
                 });
-                if(user==404){
-                    res.status(404).send({"message":"Token Expired"});
+                if (user == 404) {
+                    res.status(404).send({ "message": "Token Expired" });
                 }
-                else{
-                    res.status(200).send({"message":"Token Valid"});
+                else {
+                    res.status(200).send({ "message": "Token Valid" });
                 }
-            }catch(e){
-                res.status(404).send({"message":"Token Expired"});
+            } catch (e) {
+                res.status(404).send({ "message": "Token Expired" });
             }
         })
 
         app.post('/addToWatchlist', async (req, res) => {
             const token = req.query.token;
-            const decodeToken=jwt.decode(token);
-            const username=decodeToken.userID;
+            const decodeToken = jwt.decode(token);
+            const username = decodeToken.userID;
             const movie_id = req.query.movie_id;
             try {
-                const result = await userCollection.updateOne({"_id":{"username":username}}, { $push: { watchlist: movie_id } });
+                const result = await userCollection.updateOne({ "_id": { "username": username } }, { $push: { watchlist: movie_id } });
                 if (result.modifiedCount == 1) {
                     res.status(200).send({ "message": "successfully added to watchlist" });
                 }
@@ -131,10 +131,10 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
 
         app.get('/fetchWatchlist', async (req, res) => {
             const token = req.query.token;
-            const decodeToken=jwt.decode(token);
-            const username=decodeToken.userID;
+            const decodeToken = jwt.decode(token);
+            const username = decodeToken.userID;
             try {
-                const cursor = await userCollection.findOne({"_id":{"username":username}});
+                const cursor = await userCollection.findOne({ "_id": { "username": username } });
                 res.status(200).send({ "watchlist": cursor.watchlist });
             }
             catch (err) {
@@ -143,14 +143,32 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
             }
         });
 
-        app.get('/fetchMovieById', async (req,res)=>{
-            const movie_id=req.query.movie_id;
+        app.get('/fetchMovieById', async (req, res) => {
+            const movie_id = req.query.movie_id;
             try {
-                const result = await moviesCollection.findOne({"_id":{"movie_id":movie_id}});
+                const result = await moviesCollection.findOne({ "_id": { "movie_id": movie_id } });
                 res.status(200).send({ "message": "successs", "movies": result });
             } catch (error) {
                 console.error(error);
                 res.status(404).send({ "message": "Error retrieving movies from database." });
+            }
+        });
+
+        app.get('/checkTokenValidity', async (req,res)=>{
+            const token=req.query.token;
+            const user = jwt.verify(token, secret, (err, response) => {
+                if (err) {
+                    return 404;
+                }
+                else {
+                    return 200;
+                }
+            });
+            if(user===404){
+                res.status(404).send({"message":"Token Expired"});
+            }
+            else{
+                res.status(202).send({"message":"Token Valid"});
             }
         });
 
