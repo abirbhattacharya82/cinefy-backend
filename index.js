@@ -115,9 +115,10 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
             const decodeToken = jwt.decode(token);
             const username = decodeToken.userID;
             const movie_id = req.query.movie_id;
+            const movie_name=req.query.movie_name;
             try {
-                const elem={
-                    "name":movie_name,
+                const elem = {
+                    "name": movie_name,
                     "src": movie_id
                 }
                 const result = await userCollection.updateOne({ "_id": { "username": username } }, { $push: { watchlist: elem } });
@@ -158,8 +159,8 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
             }
         });
 
-        app.get('/checkTokenValidity', async (req,res)=>{
-            const token=req.query.token;
+        app.get('/checkTokenValidity', async (req, res) => {
+            const token = req.query.token;
             const secret = process.env.secret;
             const user = jwt.verify(token, secret, (err, response) => {
                 if (err) {
@@ -169,11 +170,11 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
                     return 200;
                 }
             });
-            if(user===404){
-                res.status(404).send({"message":"Token Expired"});
+            if (user === 404) {
+                res.status(404).send({ "message": "Token Expired" });
             }
-            else{
-                res.status(202).send({"message":"Token Valid"});
+            else {
+                res.status(202).send({ "message": "Token Valid" });
             }
         });
 
