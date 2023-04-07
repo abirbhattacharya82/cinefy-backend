@@ -116,7 +116,11 @@ MongoClient.connect(mongoURI, { useUnifiedTopology: true })
             const username = decodeToken.userID;
             const movie_id = req.query.movie_id;
             try {
-                const result = await userCollection.updateOne({ "_id": { "username": username } }, { $push: { watchlist: movie_id } });
+                const elem={
+                    "name":movie_name,
+                    "src": movie_id
+                }
+                const result = await userCollection.updateOne({ "_id": { "username": username } }, { $push: { watchlist: elem } });
                 if (result.modifiedCount == 1) {
                     res.status(200).send({ "message": "successfully added to watchlist" });
                 }
